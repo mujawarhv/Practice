@@ -1,4 +1,0 @@
-<syn:proxy xmlns:syn="http://ws.apache.org/ns/synapse"
-           name="RCPSServiceMediator" transports="https,http,hdsRcpsHttp,hmsRcpsHttp" startOnLoad="true" trace="enable" statistics="enable">
-   <syn:target inSequence="RCPSServiceMediatorSequence" outSequence="RCPSServiceMediatorSequence" faultSequence="RCPSErrorHandlerSequence" />
-</syn:proxy>
