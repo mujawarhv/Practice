@@ -1,0 +1,30 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="rcps-error-handler" type="1">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" version="1.0">
+
+	<xsl:param name="ErrorCode" />
+
+	<xsl:param name="ErrorMessage" />
+
+	<xsl:param name="StatusCode" /> 
+
+	<xsl:param name="RootElement" />
+	
+	<xsl:param name="messageVersion" />
+
+	<xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+
+	<xsl:template match="/">
+		<xsl:element name="{$RootElement}" namespace="">
+			<xsl:attribute name="version" namespace=""><xsl:value-of select="$messageVersion" /></xsl:attribute>
+			<xsl:attribute name="resultSetSize" namespace="">0</xsl:attribute>
+		
+		<xsl:element name="ResponseStatus" namespace="">
+			<xsl:attribute name="statusCode" namespace=""><xsl:value-of select="$StatusCode" /></xsl:attribute>
+			<xsl:attribute name="statusDescription" namespace=""> <xsl:value-of select="$ErrorCode" /> - <xsl:value-of select="$ErrorMessage" /></xsl:attribute>
+		</xsl:element>
+	</xsl:element>
+	</xsl:template>
+
+</xsl:stylesheet>
+</syn:localEntry>
+                            

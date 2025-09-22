@@ -1,0 +1,46 @@
+<syn:sequence xmlns:syn="http://ws.apache.org/ns/synapse" name="RCPSServiceMediatorSequence" onError="RCPSErrorHandlerSequence">
+   <syn:in>
+      <syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="RootElement" expression="/*" scope="default" />
+      <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://tempuri.org/" xpath="//RxcomPrescriberQueryRequest">
+         <syn:then>
+            <syn:property name="RCPS_MESSAGE_TYPE" scope="default" value="queryPrescriber"/>
+            <syn:sequence key="RCPSQueryMediatorSequence" />
+         </syn:then>
+         <syn:else />
+      </syn:filter>
+      <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" xpath="//RxcomPrescriberSelectRequest">
+         <syn:then>
+            <syn:property name="RCPS_MESSAGE_TYPE" scope="default" value="selectPrescriber"/>
+            <syn:sequence key="RCPSSelectMediatorSequence" />
+         </syn:then>
+         <syn:else />
+      </syn:filter>
+   </syn:in>
+   <syn:out>
+      <syn:property name="FORCE_POX_OUTPUT" value="true" scope="axis2" />
+      <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="get-property('PDX_ERROR_MESSAGE')" regex="true">
+         <syn:then />
+         <syn:else>
+            <syn:filter xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xpath="//s:Fault">
+               <syn:then>
+                  <syn:sequence key="RCPSErrorHandlerSequence" />
+               </syn:then>
+               <syn:else />
+            </syn:filter>
+            <syn:filter source="get-property( 'RCPS_MESSAGE_TYPE' )" regex="queryPrescriber">
+               <syn:then>
+                  <syn:sequence key="RCPSQueryMediatorSequence" />
+               </syn:then>
+               <syn:else />
+            </syn:filter>
+            <syn:filter source="get-property( 'RCPS_MESSAGE_TYPE' )" regex="selectPrescriber">
+               <syn:then>
+                  <syn:sequence key="RCPSSelectMediatorSequence" />
+               </syn:then>
+               <syn:else />
+            </syn:filter>
+            <syn:send />
+         </syn:else>
+      </syn:filter>
+   </syn:out>
+</syn:sequence>

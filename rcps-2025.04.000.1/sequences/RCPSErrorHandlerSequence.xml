@@ -1,0 +1,101 @@
+<syn:sequence xmlns:syn="http://ws.apache.org/ns/synapse" name="RCPSErrorHandlerSequence">
+   <syn:filter xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xpath="get-property('PDX_SERVICE_UNAVAILABLE')" >
+      <syn:then>
+         <!-- Service unavailable is a special case. Generate fault and return it as pox -->
+         <syn:makefault version="soap11">
+            <syn:code xmlns:soap11Env="http://schemas.xmlsoap.org/soap/envelope/" value="soap11Env:Server" />
+            <syn:reason expression="get-property('PDX_SOAP_FAULT_REASON')" />
+            <syn:role></syn:role>
+   	     </syn:makefault>
+         <syn:xslt key="Common-fault-pox-transformer" />
+         <syn:property name="FORCE_POX_OUTPUT" value="true" scope="axis2" />
+         <syn:property name="PDX_ERROR_MESSAGE" value="true" />
+         <syn:property name="RESPONSE" value="true" />
+         <syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+		    <syn:property name="terminalId" value="0" />
+		    <syn:property name="saveTransportHeaders" value="true" />
+		    <syn:property name="destinationURL" value="" />
+		    <syn:property name="sourceService" value="wso2" />
+		    <syn:property name="destinationService" value="wso2" />
+		    <syn:property name="logPayload" value="true" />
+		    <syn:property name="applicationId" value="rcps" />
+		    <syn:property name="sourceAction" value="proxy" />
+		    <syn:property name="destinationAction" value="endpoint" />
+		    <syn:property name="auditTypeString" value="RESPONSE" />
+		    <syn:property name="saveSynapseProperties" value="true" />
+		 </syn:class>
+         <syn:send />
+         <syn:drop />
+      </syn:then>
+   </syn:filter>
+   <syn:property name="STATUS_CODE" value="500" />
+   <syn:log>
+      <syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="MessageBody" expression="$body/child::*" />
+   </syn:log>
+   <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="get-property('isSOAPFault')" regex="true">
+      <syn:then>
+         <syn:property name="STATUS_CODE" value="500" />
+         <syn:property xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/" name="ERROR_CODE" expression="//s11:Fault/faultcode" />
+         <syn:property name="ERROR_MESSAGE" value="Soap Fault Returned from External Endpoint" />
+         <syn:property xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/" name="ERROR_DETAIL" expression="//s11:Fault/faultstring" />
+         <syn:property name="ERROR_EXCEPTION" value="" />
+      </syn:then>
+      <syn:else />
+   </syn:filter>
+   <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="get-property('PDX_SOAP_FAULT_SIGNAL')" regex="true">
+      <syn:then>
+         <syn:property name="STATUS_CODE" value="400" />
+         <syn:property name="ERROR_CODE" value="Server Error" />
+         <syn:property name="ERROR_MESSAGE" value="ARS Product verification failure" />
+         <syn:property name="ERROR_DETAIL" expression="get-property('PDX_SOAP_FAULT_REASON')" />
+         <syn:property name="ERROR_EXCEPTION" value="" />
+         <syn:log level="full">
+            <syn:property name="ARSVerificationFailure" expression="ARSVerificationFailure" />
+         </syn:log>
+      </syn:then>
+      <syn:else />
+   </syn:filter>
+   <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="$body/child::*" regex=".*RxcomPrescriberQueryResponse">
+      <syn:then>
+         <syn:property name="ROOT_ELEMENT" value="RxcomPrescriberQueryResponse" scope="default" />
+      </syn:then>
+      <syn:else />
+   </syn:filter>
+   <syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="$body/child::*" regex="RxcomPrescriberSelectResponse">
+      <syn:then>
+         <syn:property name="ROOT_ELEMENT" value="RxcomPrescriberSelectResponse" scope="default" />
+      </syn:then>
+      <syn:else />
+   </syn:filter>
+   <syn:xslt xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" key="rcps-error-handler" source="$body/child::*">
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="ErrorCode" expression="get-property('ERROR_CODE')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="ErrorMessage" expression="get-property('ERROR_MESSAGE')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="ErrorDetail" expression="get-property('ERROR_DETAIL')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="ErrorException" expression="get-property('ERROR_EXCEPTION')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="StatusCode" expression="get-property('STATUS_CODE')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="RootElement" expression="get-property('ROOT_RESPONSE_ELEMENT')" />
+      <syn:property xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" name="messageVersion" expression="get-property('messageVersion')" />
+   </syn:xslt>
+   <syn:log level="custom">
+      <syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="XMLErrorResponse" expression="$body/child::*" />
+   </syn:log>
+   <syn:property name="PDX_ERROR_MESSAGE" value="true" />
+   <syn:property name="RESPONSE" value="true" />
+   <syn:property name="FORCE_POX_OUTPUT" value="true" scope="axis2" />
+   <syn:header name="To" action="remove" />
+   <syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+      <syn:property name="terminalId" value="0" />
+      <syn:property name="saveTransportHeaders" value="true" />
+      <syn:property name="destinationURL" value="" />
+      <syn:property name="sourceService" value="wso2" />
+      <syn:property name="destinationService" value="wso2" />
+      <syn:property name="logPayload" value="true" />
+      <syn:property name="applicationId" value="rcps" />
+      <syn:property name="sourceAction" value="proxy" />
+      <syn:property name="destinationAction" value="endpoint" />
+      <syn:property name="auditTypeString" value="RESPONSE" />
+      <syn:property name="saveSynapseProperties" value="true" />
+   </syn:class>
+   <syn:send />
+   <syn:drop />
+</syn:sequence>

@@ -1,0 +1,138 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="hms-4-select-req-transformer" type="1">
+   <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:urn="urn:lnrisk:ws:wshealthcare:@ver=3.17">
+
+      <xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+
+      <xsl:variable name="hms-namespace-prefix">urn</xsl:variable>
+      <xsl:variable name="hms-soapenv-envelope">xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"</xsl:variable>
+      <xsl:variable name="hms-urn-prefix">xmlns:urn="urn:lnrisk:ws:wshealthcare:@ver=3.17"</xsl:variable>
+
+      <xsl:template match="/">
+         <xsl:element name="soapenv:Envelope {$hms-soapenv-envelope} {$hms-urn-prefix}">
+            <xsl:element name="soapenv:Body">
+               <xsl:element name="{$hms-namespace-prefix}:ProviderReportRequest">
+                  <xsl:element name="{$hms-namespace-prefix}:User">
+                        <xsl:element name="{$hms-namespace-prefix}:ReferenceCode"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:BillingCode"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:QueryId"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:GLBPurpose">7</xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:DLPurpose"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:SubDLPurpose"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:EndUser">
+                            <xsl:element name="{$hms-namespace-prefix}:CompanyName">CHANGE HEALTH CARE</xsl:element>
+                            <xsl:element name="{$hms-namespace-prefix}:StreetAddress1">100 LEXINGTON STREET</xsl:element>
+                            <xsl:element name="{$hms-namespace-prefix}:City">FORT WORTH</xsl:element>
+                            <xsl:element name="{$hms-namespace-prefix}:State">TX</xsl:element>
+                            <xsl:element name="{$hms-namespace-prefix}:Zip5">76102</xsl:element>
+                            <xsl:element name="{$hms-namespace-prefix}:Phone"></xsl:element>
+                        </xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:MaxWaitSeconds"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:AccountNumber"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:OutputType"></xsl:element>
+                    </xsl:element>
+                  <xsl:element name="{$hms-namespace-prefix}:Options">
+                     <xsl:element name="{$hms-namespace-prefix}:ReturnCount">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:StartingRecord">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeEmail">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeLanguages">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeCoveredRecepients">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeShaID">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeSurescripts">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeTaxID">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeIncomplete">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeSanctions">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeSpecialties">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeLicenses">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeDOB">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeDOD">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeDEA">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeNPI">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeUPIN">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeMedSchool">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeMedicaid">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeCSR">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeAffiliations">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeABMSBoardCertifiedSpecialty">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeVerifiedSecureFax">1</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeSurescriptsLearnedLocations">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:SuppressLicenseHistory">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:SortAndRankLicenseTogether">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:ExcludeGSASanction">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeMedicareEnrollment">0</xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:IncludeMedicareOrderReferring">0</xsl:element>
+                  </xsl:element>
+                  <xsl:element name="{$hms-namespace-prefix}:ReportBy">
+                     <xsl:element name="{$hms-namespace-prefix}:LNPID">
+                        <xsl:value-of select="//RxcomPrescriberSelectRequest/Select/rcpsIdNum"/>
+                     </xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:UniqueId"></xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:ProviderName">
+                        <xsl:element name="{$hms-namespace-prefix}:Full"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:First"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Last"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Suffix"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Prefix"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:ProfessionalSuffix"></xsl:element>
+                     </xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:LocationAddress">
+                        <xsl:element name="{$hms-namespace-prefix}:AddressType"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetNumber"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetPreDirection"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetName"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetSuffix"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:UnitDesignation"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:UnitNumber"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetAddress1"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StreetAddress2"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:City"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:State"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Zip5"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Zip4"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Country"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:PostalCode"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:StateCityZip"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Latitude"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:Longitute"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:CBSA"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:LegacyAggregateId"></xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:LegacyLocationId">
+                           <xsl:value-of select="//RxcomPrescriberSelectRequest/Select/locationIdentifier"/>
+                        </xsl:element>
+                        <xsl:element name="{$hms-namespace-prefix}:LegacyAggregatedId">
+                           <xsl:value-of select="//RxcomPrescriberSelectRequest/Select/addressGroupIdentifier"/>
+                        </xsl:element>
+                     </xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:TIN"></xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:UPIN"></xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:Phone"></xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:Fax"></xsl:element>
+                     <xsl:element name="{$hms-namespace-prefix}:License">
+                        <xsl:element name="{$hms-namespace-prefix}:Licenses">
+                           <xsl:element name="{$hms-namespace-prefix}:NPINumber"></xsl:element>
+                           <xsl:element name="{$hms-namespace-prefix}:DEANumbers">
+                              <xsl:element name="{$hms-namespace-prefix}:DEANumber"></xsl:element>
+                           </xsl:element>
+                        </xsl:element>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:Specialties">
+                        <xsl:element name="{$hms-namespace-prefix}:Specialty">
+                           <xsl:element name="{$hms-namespace-prefix}:PractitionerType"></xsl:element>
+                           <xsl:element name="{$hms-namespace-prefix}:Specialty"></xsl:element>
+                           <xsl:element name="{$hms-namespace-prefix}:SubSpecialty"></xsl:element>
+                        </xsl:element>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:MedicaidNumber"></xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:MedicaidState"></xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:CSRNumber"></xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:CSRState"></xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:SurescriptsProviderId"></xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:CoveredRecipientId"></xsl:element>
+                  </xsl:element>
+               </xsl:element>
+            </xsl:element>
+         </xsl:element>   
+      </xsl:template>
+
+   </xsl:stylesheet>
+
+</syn:localEntry>

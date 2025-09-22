@@ -1,0 +1,210 @@
+<syn:sequence xmlns:syn="http://ws.apache.org/ns/synapse" name="RCPSSelectMediatorSequence" onError="RCPSErrorHandlerSequence">
+	<syn:in>
+		<syn:property name="ROOT_RESPONSE_ELEMENT" value="RxcomPrescriberSelectResponse" />
+		<syn:log level="custom">
+			<syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="TRANSPORT_HEADER" expression="$trp:ClientCert-Subject" />
+		</syn:log>
+		<syn:log level="custom">
+			<syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="SSL_TRANSPORT_HEADER" expression="$trp:SSLClientCertSubject" />
+		</syn:log>
+		<!-- Security check -->
+		<syn:class name="com.rx.esb.security.RxComSecurityMediator">
+			<axis2ns691:property xmlns:axis2ns691="http://ws.apache.org/ns/synapse" name="addSecurityInfoToHeaders" value="false" />
+		</syn:class>
+		<!-- Error on security check failure -->
+		<syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="get-property( 'PDX_SOAP_FAULT_SIGNAL' )" regex="true">
+			<syn:then>
+				<syn:log level="full" />
+				<syn:sequence key="RCPSErrorHandlerSequence" />
+			</syn:then>
+			<syn:else />
+		</syn:filter>
+		<syn:class name="com.rx.audit.wso2.PDXAuditIdMediator" />
+		<syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+			<syn:property name="terminalId" value="0" />
+			<syn:property name="saveTransportHeaders" value="true" />
+			<syn:property name="destinationURL" value="" />
+			<syn:property name="sourceService" value="wso2" />
+			<syn:property name="destinationService" value="wso2" />
+			<syn:property name="logPayload" value="true" />
+			<syn:property name="applicationId" value="rcps" />
+			<syn:property name="sourceAction" value="proxy" />
+			<syn:property name="destinationAction" value="endpoint" />
+			<syn:property name="auditTypeString" value="REQUEST" />
+			<syn:property name="saveSynapseProperties" value="true" />
+			<syn:property name="critical" value="false" />
+		</syn:class>
+		<!-- Product authorization check -->
+		<syn:class name="com.rx.esb.security.ARSProductAuthorizationMediator">
+			<axis2ns703:property xmlns:axis2ns703="http://ws.apache.org/ns/synapse" name="productName" value="rcps" />
+		</syn:class>
+		<!-- Fail on product authorization failure -->
+		<syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" source="get-property( 'PDX_SOAP_FAULT_SIGNAL' )" regex="true">
+			<syn:then>
+				<syn:log level="full" />
+				<syn:sequence key="RCPSErrorHandlerSequence" />
+			</syn:then>
+			<syn:else />
+		</syn:filter>
+		<!-- Communication status check -->
+		<syn:class name="com.rx.esb.security.ARSCommRestrictionMediator">
+	    	<syn:property name="productName" value="rcps" />
+    	</syn:class>
+    	<syn:filter xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+    		xpath="get-property('PDX_SOAP_FAULT_SIGNAL')">
+	      	<syn:then>
+	        	<!-- Will generate and send a fault and then stop processing. -->
+	        	<!-- Expects the property 'PDX_SOAP_FAULT_REASON' to be populated. -->
+	        	<syn:sequence key="RCPSErrorHandlerSequence" />
+	      	</syn:then>
+	      	<syn:else />
+    	</syn:filter>
+		<!-- Get message version from request -->
+		<syn:filter xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" xpath="$body/*[1]/@version">
+			<syn:then>
+				<syn:property name="messageVersion" expression="$body/*[1]/@version" />
+			</syn:then>
+			<syn:else>
+				<syn:property name="messageVersion" value="1.0" />
+			</syn:else>
+		</syn:filter>
+		<syn:log>
+			<syn:property xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" name="ArsProduct" expression="get-property('ARS_PRODUCT_VENDOR')" />
+		</syn:log>
+		<syn:filter xmlns:ns2="http://org.apache.synapse/xsd" xmlns:ns="http://org.apache.synapse/xsd" xpath="//vendorId != get-property('ARS_PRODUCT_VENDOR')">
+			<syn:then>
+				<syn:log>
+					<syn:property name="ArsProductVendor" expression="get-property('ARS_PRODUCT_VENDOR')" />
+				</syn:log>
+				<syn:property name="STATUS_CODE" value="500" scope="default" />
+				<syn:property name="ERROR_MESSAGE" value="Invalid Vendor" scope="default" />
+				<syn:property name="ERROR_DETAIL" value="Invalid vendor for product" scope="default" />
+				<syn:sequence key="RCPSErrorHandlerSequence" />
+			</syn:then>
+			<syn:else />
+		</syn:filter>
+
+		<syn:property name="LegacyLocationId" expression="$body/RxcomPrescriberSelectRequest/Select/locationIdentifier" />
+		<syn:property name="LegacyAggregateId" expression="$body/RxcomPrescriberSelectRequest/Select/addressGroupIdentifier" />
+
+		<syn:switch source="get-property('messageVersion')">
+			#{foreach:version:com.pdxinc.rcps.versionlist}
+			<syn:case regex="(?i)#{version}">
+				<syn:switch source="get-property('ARS_PRODUCT_VENDOR_NAME')">
+					#{foreach:vendor:com.pdxinc.rcps.vendorlist}
+					<syn:case regex="(?i)#{vendor}">
+						<syn:xslt key="#{com.pdxinc.rcps.#{vendor}.#{version}.select.req.transformer}" >
+							<syn:property  name="ncpdp" expression="get-property('ARS_STORE_NCPDP')"/>
+						</syn:xslt>
+						<syn:property name="Authorization" value="Basic #{com.pdxinc.rcps.#{vendor}.#{version}.webservice.APIKey}" scope="transport" />
+						<syn:property name="APIKey" value="#{com.pdxinc.rcps.#{vendor}.#{version}.webservice.APIKey}" scope="transport" />
+						<syn:property name="X-MESSAGE_VERSION" value="#{version}" scope="transport"  />
+						<syn:property name="X-MESSAGE_TYPE" value="PrescriberSelectRequest" scope="transport" />
+						<syn:property name="X-MESSAGE_VENDOR" value="#{vendor}" scope="transport" />
+						<syn:header name="Action" value="#{com.pdxinc.rcps.#{vendor}.select.soapAction}" />
+						<syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+							<syn:property name="terminalId" value="0" />
+							<syn:property name="saveTransportHeaders" value="true" />
+							<syn:property name="destinationURL" value="#{com.pdxinc.rcps.#{vendor}.#{version}.select.webservice.url}" />
+							<syn:property name="sourceService" value="wso2" />
+							<syn:property name="destinationService" value="#{com.pdxinc.rcps.#{vendor}.destinationService}" />
+							<syn:property name="applicationId" value="rcps" />
+							<syn:property name="sourceAction" value="endpoint" />
+							<syn:property name="destinationAction" value="proxy" />
+							<syn:property name="auditTypeString" value="REQUEST" />
+							<syn:property name="saveSynapseProperties" value="true" />
+							<syn:property name="logPayload" value="true" />
+							<syn:property name="critical" value="false" />
+						</syn:class>
+						<syn:send> 
+							<syn:endpoint>
+								<syn:address uri="#{com.pdxinc.rcps.#{vendor}.#{version}.select.webservice.url}" format="#{com.pdxinc.rcps.#{vendor}.webservice.format}" >
+									<syn:suspendOnFailure>
+										<syn:initialDuration>1</syn:initialDuration>
+										<syn:progressionFactor>1.0</syn:progressionFactor>
+										<syn:maximumDuration>1</syn:maximumDuration>
+									</syn:suspendOnFailure>
+									<syn:markForSuspension>
+										<syn:retriesBeforeSuspension>0</syn:retriesBeforeSuspension>
+										<syn:retryDelay>0</syn:retryDelay>
+									</syn:markForSuspension>
+									<syn:timeout>
+										<syn:duration>#{com.pdxinc.rcps.#{vendor}.webservice.timeoutms}</syn:duration>
+										<syn:action>discard</syn:action>
+									</syn:timeout>
+								</syn:address>
+							</syn:endpoint> 
+						</syn:send>
+					</syn:case>
+					#{end}
+					<syn:default>
+						<syn:log>
+							<syn:property name="message" value="ARS_PRODUCT_VENDOR switch failed; default fallthrough." />
+						</syn:log>
+						<syn:property name="STATUS_CODE" value="500" scope="default" />
+						<syn:property name="ERROR_CODE" value="Server Error" />
+						<syn:property name="ERROR_MESSAGE" expression="concat('Unrecognized Vendor ID: ',get-property('ARS_PRODUCT_VENDOR_NAME'))" scope="default" />
+						<syn:sequence key="RCPSErrorHandlerSequence" />
+					</syn:default>
+				</syn:switch>
+			</syn:case>
+			#{end}
+			<syn:default></syn:default>
+		</syn:switch>
+	</syn:in>
+	<syn:out>
+		<syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+			<syn:property name="saveTransportHeaders" value="true" />
+			<syn:property name="terminalId" value="0" />
+			<syn:property name="destinationURL" value="" />
+			<syn:property name="sourceService" value="wso2" />
+			<syn:property name="destinationService" value="wso2" />
+			<syn:property name="applicationId" value="rcps" />
+			<syn:property name="destinationAction" value="proxy" />
+			<syn:property name="sourceAction" value="endpoint" />
+			<syn:property name="auditTypeString" value="RESPONSE" />
+			<syn:property name="saveSynapseProperties" value="true" />
+			<syn:property name="logPayload" value="true" />
+			<syn:property name="critical" value="false" />
+		</syn:class>
+		<syn:switch source="get-property('messageVersion')">
+			#{foreach:version:com.pdxinc.rcps.versionlist}
+			<syn:case regex="(?i)#{version}">
+				<syn:switch source="get-property('ARS_PRODUCT_VENDOR_NAME')">
+					#{foreach:vendor:com.pdxinc.rcps.vendorlist}
+					<syn:case regex="(?i)#{vendor}">
+						<syn:xslt key="#{com.pdxinc.rcps.#{vendor}.#{version}.select.resp.transformer}">
+							<syn:property name="LegacyLocationId" expression="get-property('LegacyLocationId')"/>
+							<syn:property name="LegacyAggregateId" expression="get-property('LegacyAggregateId')"/>
+						</syn:xslt>
+					</syn:case>
+					#{end}
+					<syn:default>
+						<syn:log>
+							<syn:property name="message" value="ARS_PRODUCT_VENDOR switch failed; default fallthrough." />
+						</syn:log>
+						<syn:property name="STATUS_CODE" value="500" scope="default" />
+						<syn:property name="ERROR_CODE" value="Server Error" />
+						<syn:property name="ERROR_MESSAGE" expression="concat('Unrecognized Vendor ID: ',get-property('ARS_PRODUCT_VENDOR_NAME'))" scope="default" />
+						<syn:sequence key="RCPSErrorHandlerSequence" />
+					</syn:default>
+				</syn:switch>
+			</syn:case>
+			#{end}
+			<syn:default></syn:default>
+		</syn:switch>
+		<syn:class name="com.rx.audit.wso2.PDXAuditMediator">
+			<syn:property name="saveTransportHeaders" value="true" />
+			<syn:property name="terminalId" value="0" />
+			<syn:property name="destinationURL" value="" />
+			<syn:property name="sourceService" value="wso2" />
+			<syn:property name="destinationService" value="wso2" />
+			<syn:property name="applicationId" value="rcps" />
+			<syn:property name="logPayload" value="true" />
+			<syn:property name="destinationAction" value="endpoint" />
+			<syn:property name="sourceAction" value="proxy" />
+			<syn:property name="auditTypeString" value="RESPONSE" />
+			<syn:property name="saveSynapseProperties" value="true" />
+		</syn:class>
+	</syn:out>
+</syn:sequence>

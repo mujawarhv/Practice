@@ -1,0 +1,177 @@
+<ns1:localEntry xmlns:ns1="http://ws.apache.org/ns/synapse"
+	key="hds-select-resp-transformer" type="2">
+	<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns:tem="http://tempuri.org/" xmlns:temp="http://svc.kp.org/diag_thrpy/phrmcy/info/InventoryTypes/v1"
+		xmlns:a="http://schemas.datacontract.org/2004/07/ICADM.CPAPISearch.Service.DataContracts"
+		version="2.0">
+		<xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+		
+		 <xsl:param name="count" select="//a:Count" />
+        
+        <xsl:template name="custom">                
+                <xsl:param name="statusDescriptionParam" />
+                <xsl:param name="statusCodeParam" />
+                <xsl:element name="RxcomPrescriberSelectResponse"
+                        inherit-namespaces="no" namespace="">
+                        <xsl:attribute name="version">1.0</xsl:attribute>                        
+                        <xsl:element name="ResponseStatus" inherit-namespaces="no" namespace="">
+                                <xsl:attribute name="statusCode"><xsl:value-of select="$statusCodeParam" /></xsl:attribute>
+                                <xsl:attribute name="statusDescription"><xsl:value-of select="$statusDescriptionParam" /></xsl:attribute>                                
+                        </xsl:element>			
+                      	<xsl:element name="Prescriber">
+							<xsl:apply-templates select="//a:Providers" />
+						</xsl:element>                      
+			</xsl:element>
+        </xsl:template>
+
+        <xsl:template match="/">		
+                <xsl:choose>
+                        <xsl:when test="$count = 1">
+				<xsl:call-template name="custom">                                       
+                                        <xsl:with-param name="statusDescriptionParam">Success</xsl:with-param>
+                                        <xsl:with-param name="statusCodeParam">200</xsl:with-param>
+                                </xsl:call-template>
+                        </xsl:when>                        
+                        <xsl:otherwise>
+                                <xsl:call-template name="custom">                                        
+                                        <xsl:with-param name="statusDescriptionParam">No Prescriber records found</xsl:with-param>
+                                        <xsl:with-param name="statusCodeParam">0</xsl:with-param>
+                                </xsl:call-template>                                
+                        </xsl:otherwise>
+                </xsl:choose>
+        </xsl:template>
+
+		<xsl:template match="a:Provider">
+			<xsl:element name="lastName">
+				<xsl:value-of select="a:LastName" />
+			</xsl:element>
+			<xsl:element name="firstName">
+				<xsl:value-of select="a:FirstName" />
+			</xsl:element>
+			<xsl:element name="midName">
+				<xsl:value-of select="a:MiddleName" />
+			</xsl:element>
+			<xsl:element name="address">
+				<xsl:value-of select="a:AddressLine1" />
+			</xsl:element>
+			<xsl:element name="address2">
+				<xsl:value-of select="a:AddressLine2" />
+			</xsl:element>
+			<xsl:element name="city">
+				<xsl:value-of select="a:City" />
+			</xsl:element>
+			<xsl:element name="state">
+				<xsl:value-of select="a:State" />
+			</xsl:element>
+			<xsl:element name="zipCode">
+				<xsl:value-of select="a:Zip5" />
+			</xsl:element>
+			<xsl:element name="areaCode">
+			    <xsl:if test="string-length(a:Phone1) > 7">
+				   <xsl:value-of select="substring(a:Phone1,1,3)" />
+                   </xsl:if>
+			</xsl:element>
+			<xsl:element name="phone">
+				<xsl:value-of select="substring(a:Phone1,string-length(a:Phone1)-6,7)" />
+			</xsl:element>
+			<xsl:element name="areaCode2">
+			    <xsl:if test="string-length(a:Phone2) > 7">
+				   <xsl:value-of select="substring(a:Phone2,1,3)" />
+                   </xsl:if>
+			</xsl:element>
+			<xsl:element name="phone2">
+				<xsl:value-of select="substring(a:Phone2,string-length(a:Phone2)-6,7)" />
+			</xsl:element>
+			<xsl:element name="faxAreaCode">
+			    <xsl:if test="string-length(a:SecureFax) > 7">
+				   <xsl:value-of select="substring(a:SecureFax,1,3)" />
+                   </xsl:if>
+			</xsl:element>
+			<xsl:element name="faxNum">
+				<xsl:value-of select="substring(a:SecureFax,string-length(a:SecureFax)-6,7)" />
+			</xsl:element>
+			<xsl:element name="faxAreaCode2">
+			    <xsl:if test="string-length(a:Fax) > 7">
+				   <xsl:value-of select="substring(a:Fax,1,3)" />
+                   </xsl:if>
+			</xsl:element>
+			<xsl:element name="faxNum2">
+				<xsl:value-of select="substring(a:Fax,string-length(a:Fax)-6,7)" />
+			</xsl:element>
+			<xsl:element name="deaNum">
+				<xsl:value-of select="a:DEAs/a:DEA/a:DEANumber" />
+			</xsl:element>
+			<xsl:element name="deaExpDate">
+				<xsl:value-of select="a:DEAs/a:DEA/a:DEAExpirationDate" />
+			</xsl:element>
+			<xsl:element name="npiNum">
+				<xsl:value-of select="a:NPINumber" />
+			</xsl:element>
+			<xsl:element name="rcpsIdNum">
+				<xsl:value-of select="a:AddressSurroId" />
+			</xsl:element>
+            <xsl:element name="vendorId">1</xsl:element>
+			<xsl:element name="stateIdState">
+				<xsl:value-of select="a:StateLicenses/a:StateLicense/a:SLNState" />
+			</xsl:element>
+			<xsl:element name="stateIdNum">
+				<xsl:value-of select="a:StateLicenses/a:StateLicense/a:SLNNumber" />
+			</xsl:element>
+			<xsl:element name="degreeType">
+			    <xsl:variable name="SLNCertificationCode" select="//a:StateLicenses/a:StateLicense/a:SLNCertificationCode" />			
+				<xsl:choose>
+					<xsl:when test="string-length($SLNCertificationCode) > 0">
+						<xsl:value-of select="$SLNCertificationCode" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="a:PrimarySpecialtyCode" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:element>
+			<!--  specialty and specialty2 currently support a max of 3 characters
+			      this restriction should be removed in the future.             
+			      Current spec:  if primary code > 3 chars use secondary  -->
+			<xsl:variable name="specialty1">			
+				<xsl:choose>
+				    <xsl:when test="string-length(a:PrimarySpecialtyCode) &lt; 4" >
+						<xsl:value-of select="a:PrimarySpecialtyCode" />
+				    </xsl:when>
+				    <xsl:otherwise>
+					    <xsl:if test="string-length(a:SecondarySpecialtyCode) &lt; 4">
+							<xsl:value-of select="a:SecondarySpecialtyCode" />
+					    </xsl:if>
+				    </xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
+			<!--  determine if the secondary was primary otherwise, move it into specialty2 -->				
+			<xsl:variable name="specialty2">	
+			    <xsl:if test="string-length(a:PrimarySpecialtyCode) &lt; 4" >
+				    <xsl:if test="string-length(a:SecondarySpecialtyCode) &lt; 4">
+						<xsl:value-of select="a:SecondarySpecialtyCode" />
+				    </xsl:if>
+			    </xsl:if>
+			</xsl:variable>			
+			
+			<xsl:element name="specialty">
+				<xsl:value-of select="$specialty1" />
+			</xsl:element>
+			<xsl:element name="specialty2">
+				<xsl:value-of select="$specialty2" />
+			</xsl:element>		
+			<xsl:element name="medicaidNum">
+				<xsl:value-of select="a:MedicaidId" />
+			</xsl:element>
+			<xsl:element name="medicaidState">
+				<xsl:value-of select="a:MedicaidState" />
+			</xsl:element>	
+			<xsl:element name="medicareNum">
+				<xsl:value-of select="a:MedicareId" />
+			</xsl:element>
+			<xsl:element name="medicareState"/>  <!-- not in the iqvia response -->
+			<xsl:element name="waiverId">
+				<xsl:value-of select="a:DEAs/a:DEA/a:XDEANum" />
+			</xsl:element>
+		</xsl:template>
+	</xsl:stylesheet>
+</ns1:localEntry>

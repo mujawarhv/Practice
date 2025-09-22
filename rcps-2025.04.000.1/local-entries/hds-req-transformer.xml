@@ -1,0 +1,45 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="hds-req-transformer" type="1">
+	<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema‐instance" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+		xmlns:tem="http://tempuri.org/"
+		xmlns:icad="http://schemas.datacontract.org/2004/07/ICADM.CPAPISearch.Service.DataContracts"
+		version="2.0">
+		<xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+		<xsl:param name="ncpdp" />
+		<xsl:template match="/">
+					<tem:ProviderSearch>
+						<tem:request>
+							<xsl:element name="icad:FirstName">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/firstName" />
+							</xsl:element>
+							<xsl:element name="icad:LastName">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/lastName" />
+							</xsl:element>
+							<xsl:element name="icad:NPINumber">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/npiNum" />
+							</xsl:element>
+							<xsl:element name="icad:Phone1">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/phone" />
+							</xsl:element>
+							<xsl:element name="icad:City">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/city" />
+							</xsl:element>
+							<xsl:element name="icad:State">
+								<xsl:value-of select="/RxcomPrescriberQueryRequest/Query/state" />
+							</xsl:element>
+							<xsl:element name="icad:Zip5">
+								<xsl:value-of select="substring(/RxcomPrescriberQueryRequest/Query/zipCode,1,5)" />
+							</xsl:element>
+							<xsl:element name="icad:DEANumber">
+								<xsl:value-of select="substring(/RxcomPrescriberQueryRequest/Query/deaNum,1,9)" />
+							</xsl:element>
+							<xsl:if test="$ncpdp != ''">
+								<xsl:element name="icad:pharmacyNCPDP">
+									<xsl:value-of select="$ncpdp" />
+								</xsl:element>
+							</xsl:if>
+						</tem:request>
+					</tem:ProviderSearch>
+		</xsl:template>
+	</xsl:stylesheet>
+</syn:localEntry>

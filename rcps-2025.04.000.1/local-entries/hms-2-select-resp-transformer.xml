@@ -1,0 +1,164 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="hms-2-select-resp-transformer" type="1">
+   <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wpm="http://www.healthmarketscience.com/wpm"
+      xmlns:ns1="http://www.healthmarketscience.com/hmsws">
+
+      <xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+
+      <xsl:variable name="error500List" select="'0 3 4 5 6 7 8 9 20'" />
+      <xsl:variable name="error400List" select="'10 11 12 13 15 16 17 18 21 22 23 24 25 26 27 28 29 100 101 102 103 104 105 106 107 108 109 110 111'" />
+
+      <xsl:template name="custom">
+         <xsl:param name="statusDescriptionParam" />
+         <xsl:param name="statusCodeParam" />
+         <xsl:element name="RxcomPrescriberSelectResponse" inherit-namespaces="no" namespace="">
+            <xsl:attribute name="version">2.0</xsl:attribute>
+            <xsl:element name="ResponseStatus" inherit-namespaces="no" namespace="">
+               <xsl:attribute name="statusCode"><xsl:value-of select="$statusCodeParam" /></xsl:attribute>
+               <xsl:attribute name="statusDescription"><xsl:value-of select="$statusDescriptionParam" /></xsl:attribute>
+            </xsl:element>
+            <xsl:apply-templates select="//ns1:profileEntityResponse/wpm:practitionerReturns/wpm:practitioner[1]" />
+         </xsl:element>
+      </xsl:template>
+
+      <xsl:template match="/">
+         <xsl:variable name="errorCode" select="//ns1:profileEntityResponse/wpm:metadata/wpm:errorMessages/wpm:errorMessage[1]/wpm:code" />
+         <xsl:variable name="errorDesc" select="//ns1:profileEntityResponse/wpm:metadata/wpm:errorMessages/wpm:errorMessage[1]/wpm:description" />
+         <xsl:choose>
+            <xsl:when test="$errorCode='30'">
+               <xsl:call-template name="custom">
+                  <xsl:with-param name="statusDescriptionParam">No Prescriber records found</xsl:with-param>
+                  <xsl:with-param name="statusCodeParam">0</xsl:with-param>
+               </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="
+                       contains( 
+                       concat(' ', $error500List, ' '),
+                       concat(' ', $errorCode, ' ')
+                   )">
+               <xsl:call-template name="custom">
+                  <xsl:with-param name="statusDescriptionParam">
+                     <xsl:copy-of select="$errorCode" /> - <xsl:copy-of select="$errorDesc" />
+                  </xsl:with-param>
+                  <xsl:with-param name="statusCodeParam">500</xsl:with-param>
+               </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="
+                       contains( 
+                       concat(' ', $error400List, ' '),
+                       concat(' ', $errorCode, ' ')
+                     )">
+               <xsl:call-template name="custom">
+                  <xsl:with-param name="statusDescriptionParam">
+                     <xsl:copy-of select="$errorCode" /> - <xsl:copy-of select="$errorDesc" />
+                  </xsl:with-param>
+                  <xsl:with-param name="statusCodeParam">400</xsl:with-param>
+               </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$errorCode='14'">
+               <xsl:choose>
+                  <xsl:when test="count(//wpm:practitioner) > 0">
+                     <xsl:call-template name="custom">
+                        <xsl:with-param name="statusDescriptionParam">success</xsl:with-param>
+                        <xsl:with-param name="statusCodeParam">200</xsl:with-param>
+                     </xsl:call-template>
+                  </xsl:when>
+                  <xsl:otherwise>
+                     <xsl:call-template name="custom">
+                        <xsl:with-param name="statusDescriptionParam">
+                           <xsl:copy-of select="$errorCode" /> - <xsl:copy-of select="$errorDesc" />
+                        </xsl:with-param>
+                        <xsl:with-param name="statusCodeParam">0</xsl:with-param>
+                     </xsl:call-template>
+                  </xsl:otherwise>
+               </xsl:choose>
+            </xsl:when>                  
+            <xsl:when test="//s:Fault/*">
+               <xsl:call-template name="custom">
+                  <xsl:with-param name="statusDescriptionParam">Internal Server Error</xsl:with-param>
+                  <xsl:with-param name="statusCodeParam">500</xsl:with-param>
+               </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:call-template name="custom">
+                  <xsl:with-param name="statusDescriptionParam">Success</xsl:with-param>
+                  <xsl:with-param name="statusCodeParam">200</xsl:with-param>
+               </xsl:call-template>
+            </xsl:otherwise>
+         </xsl:choose>
+      </xsl:template>
+
+      <xsl:template match="//ns1:profileEntityResponse/wpm:practitionerReturns/wpm:practitioner[1]">
+         <xsl:element name="Prescriber">
+            <xsl:element name="lastName">
+               <xsl:value-of select="./wpm:lastName" />
+            </xsl:element>
+            <xsl:element name="firstName">
+               <xsl:value-of select="./wpm:firstName" />
+            </xsl:element>
+            <xsl:element name="midName">
+               <xsl:value-of select="./wpm:middleName" />
+            </xsl:element>
+            <xsl:element name="address">
+               <xsl:value-of select="./wpm:address/wpm:streets/wpm:street[@type='street1']" />
+            </xsl:element>
+            <xsl:element name="address2">
+               <xsl:value-of select="./wpm:address/wpm:streets/wpm:street[@type='street2']" />
+            </xsl:element>
+            <xsl:element name="city">
+               <xsl:value-of select="./wpm:address/wpm:city" />
+            </xsl:element>
+            <xsl:element name="state">
+               <xsl:value-of select="./wpm:address/wpm:state" />
+            </xsl:element>
+            <xsl:element name="zipCode">
+               <xsl:value-of select="./wpm:address/wpm:zip" />
+            </xsl:element>
+            <xsl:element name="areaCode">
+               <xsl:value-of select="substring(./wpm:address/wpm:phones/wpm:phone[1],1,3)" />
+            </xsl:element>
+            <xsl:element name="phone">
+               <xsl:value-of select="substring(./wpm:address/wpm:phones/wpm:phone[1],4,7)" />
+            </xsl:element>
+            <xsl:element name="areaCode2">
+               <xsl:value-of select="substring(./wpm:address/wpm:phones/wpm:phone[2],1,3)" />
+            </xsl:element>
+            <xsl:element name="phone2">
+               <xsl:value-of select="substring(./wpm:address/wpm:phones/wpm:phone[2],4,7)" />
+            </xsl:element>            
+            <xsl:element name="faxAreaCode">
+               <xsl:value-of select="substring(./wpm:address/wpm:faxes/wpm:fax[1],1,3)" />
+            </xsl:element>
+            <xsl:element name="faxNum">
+               <xsl:value-of select="substring(./wpm:address/wpm:faxes/wpm:fax[1],4,7)" />
+            </xsl:element>                
+            <xsl:element name="deaNum">
+               <xsl:value-of select="./wpm:dea" />
+            </xsl:element>
+            <xsl:element name="npiNum">
+               <xsl:value-of select="./wpm:npis/wpm:npi[1]" />
+            </xsl:element>
+            <xsl:element name="rcpsIdNum">
+               <xsl:value-of select="./wpm:practitionerProfileId" />
+            </xsl:element>            
+            <xsl:element name="vendorId">2</xsl:element>
+            <xsl:element name="stateIdNum">
+               <xsl:value-of select="./wpm:stateLicense" />
+            </xsl:element>
+            <xsl:if test="string-length(./wpm:credentials/wpm:credential[1]) &lt; 9">
+               <xsl:element name="degreeType">
+                  <xsl:value-of select="./wpm:credentials/wpm:credential[1]"/>
+               </xsl:element>
+            </xsl:if>
+            <xsl:element name="specialty">
+               <xsl:value-of select="./wpm:specialties/wpm:specialty[1]" />
+            </xsl:element>
+            <xsl:element name="specialty2">
+               <xsl:value-of select="./wpm:specialties/wpm:specialty[2]" />
+            </xsl:element>
+         </xsl:element>
+      </xsl:template>
+
+   </xsl:stylesheet>
+
+
+</syn:localEntry>

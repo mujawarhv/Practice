@@ -1,0 +1,24 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="hms-select-req-transformer" type="1">
+   <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wpm="http://www.healthmarketscience.com/wpm">
+
+      <xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+
+      <xsl:variable name="hms-namespace-prefix">wpm</xsl:variable>
+
+      <xsl:template match="/">
+         <xsl:element name="{$hms-namespace-prefix}:selectProfilePractitionerRequest">
+            <xsl:element name="{$hms-namespace-prefix}:metadata">
+                <xsl:element name="{$hms-namespace-prefix}:requesterId">#{com.pdxinc.rcps.HMS.1.0.select.webservice.requesterid}</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:detailLevel">SELECT_PROFILE</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:useLookupIds">true</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:useStateDesc">false</xsl:element>
+            </xsl:element>
+            <xsl:element name="{$hms-namespace-prefix}:practitionerProfileId">
+                <xsl:value-of select="//RxcomPrescriberSelectRequest/Select/rcpsIdNum"/>
+            </xsl:element>
+         </xsl:element>
+      </xsl:template>
+
+   </xsl:stylesheet>
+
+</syn:localEntry>

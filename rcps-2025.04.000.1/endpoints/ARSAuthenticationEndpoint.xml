@@ -1,0 +1,17 @@
+<syn:endpoint xmlns:syn="http://ws.apache.org/ns/synapse" name="ARSAuthenticationEndpoint">
+   <syn:address uri="#{ars.auth.endpoint}" format="pox" >
+      <syn:suspendOnFailure>
+         <syn:initialDuration>1</syn:initialDuration>
+         <syn:progressionFactor>1.0</syn:progressionFactor>
+         <syn:maximumDuration>1</syn:maximumDuration>
+      </syn:suspendOnFailure>
+      <syn:markForSuspension>
+         <syn:retriesBeforeSuspension>0</syn:retriesBeforeSuspension>
+         <syn:retryDelay>0</syn:retryDelay>
+      </syn:markForSuspension>
+      <syn:timeout>
+         <syn:duration>60000</syn:duration>
+         <syn:action>discard</syn:action>
+      </syn:timeout>
+   </syn:address>
+</syn:endpoint>

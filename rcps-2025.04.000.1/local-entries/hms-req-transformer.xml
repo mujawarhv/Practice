@@ -1,0 +1,51 @@
+<syn:localEntry xmlns:syn="http://ws.apache.org/ns/synapse" key="hms-req-transformer" type="1">
+   <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wpm="http://www.healthmarketscience.com/wpm">
+
+      <xsl:output method="xml" omit-xml-declaration="yes" indent="yes" />
+
+      <xsl:variable name="hms-namespace-prefix">wpm</xsl:variable>
+
+      <xsl:template match="/">
+         <xsl:element name="{$hms-namespace-prefix}:queryProfilePractitionersRequest">
+            <xsl:element name="{$hms-namespace-prefix}:metadata">
+                <xsl:element name="{$hms-namespace-prefix}:requesterId">#{com.pdxinc.rcps.HMS.1.0.query.webservice.requesterid}</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:detailLevel">QUERY_PROFILE</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:useLookupIds">true</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:useStateDesc">false</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:maxReturns">100</xsl:element>
+                <xsl:element name="{$hms-namespace-prefix}:returnIfTooMany">true</xsl:element>
+            </xsl:element>
+            <xsl:element name="{$hms-namespace-prefix}:practitionerConstraint">
+                <xsl:element name="{$hms-namespace-prefix}:practitionerProfile">
+                    <xsl:element name="{$hms-namespace-prefix}:lastName">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/lastName"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:firstName">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/firstName"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:city">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/city"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:state">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/state"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:zip">
+                        <xsl:value-of select="substring(//RxcomPrescriberQueryRequest/Query/zipCode,1,5)"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:phone">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/phone"/>
+                    </xsl:element>
+                    <xsl:element name="{$hms-namespace-prefix}:deaNum">
+                        <xsl:value-of select="substring(//RxcomPrescriberQueryRequest/Query/deaNum,1,9)"/>
+                    </xsl:element>                    
+                    <xsl:element name="{$hms-namespace-prefix}:npiNum">
+                        <xsl:value-of select="//RxcomPrescriberQueryRequest/Query/npiNum"/>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+         </xsl:element>
+      </xsl:template>
+
+   </xsl:stylesheet>
+
+</syn:localEntry>
